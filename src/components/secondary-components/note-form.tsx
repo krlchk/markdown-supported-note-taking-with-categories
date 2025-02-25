@@ -1,25 +1,30 @@
 import { FormEvent, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import CreatableReactSelect from "react-select";
+import { Link, useNavigate } from "react-router-dom";
+import Creatable from "react-select/creatable";
 import { NoteData, Tag } from "../../App";
 import { v4 as uuidV4 } from "uuid";
 
 type NoteFormProps = {
   onSubmit: (data: NoteData) => void;
+  onAddTag: (tag: Tag) => void;
+  availableTags: Tag[];
 };
 
-export function NoteForm({ onSubmit }: NoteFormProps) {
+export function NoteForm({ onSubmit, onAddTag, availableTags }: NoteFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const markdownRef = useRef<HTMLTextAreaElement>(null);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const navigate = useNavigate();
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     onSubmit({
       title: inputRef.current!.value,
       markdown: markdownRef.current!.value,
-      tags: [],
+      tags: selectedTags,
     });
+
+    navigate("..");
   };
   return (
     <div className="font-kanit">
@@ -42,7 +47,10 @@ export function NoteForm({ onSubmit }: NoteFormProps) {
             <label className="text-2xl font-medium" htmlFor="tags">
               Tags
             </label>
-            <CreatableReactSelect
+            <Creatable
+              options={availableTags.map((tag) => {
+                return { label: tag.label, value: tag.id };
+              })}
               onCreateOption={(label) => {
                 const newTag = { id: uuidV4(), label };
                 onAddTag(newTag);
@@ -82,17 +90,17 @@ export function NoteForm({ onSubmit }: NoteFormProps) {
             rows={15}
           />
         </div>
-        <div className="mt-5 flex gap-10 self-end">
+        <div className="mt-5 flex gap-10 mobile:gap-5 self-end xs:w-full">
           <button
             type="submit"
-            className="rounded-md bg-[#2684FF] px-6 py-2 text-2xl text-white transition-colors hover:bg-[#2684FF]/80"
+            className="mobile:text-lg mobile:px-4 xs:w-1/2 rounded-md bg-[#2684FF] px-6 py-2 text-2xl text-white transition-colors hover:bg-[#2684FF]/80"
           >
             Save
           </button>
-          <Link to="..">
+          <Link className="xs:w-1/2" to="..">
             <button
               type="button"
-              className="rounded-md border border-[#ccc] px-6 py-2 text-2xl text-[#8b8b8b] transition-colors hover:bg-[#8b8b8b]/30"
+              className="mobile:text-lg mobile:px-4 xs:w-full rounded-md border border-[#ccc] px-6 py-2 text-2xl text-[#8b8b8b] transition-colors hover:bg-[#8b8b8b]/50 hover:text-white"
             >
               Cancel
             </button>
