@@ -8,12 +8,19 @@ type NoteFormProps = {
   onSubmit: (data: NoteData) => void;
   onAddTag: (tag: Tag) => void;
   availableTags: Tag[];
-};
+} & Partial<NoteData>;
 
-export function NoteForm({ onSubmit, onAddTag, availableTags }: NoteFormProps) {
+export function NoteForm({
+  onSubmit,
+  onAddTag,
+  availableTags,
+  title = "",
+  markdown = "",
+  tags = [],
+}: NoteFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const markdownRef = useRef<HTMLTextAreaElement>(null);
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(tags);
   const navigate = useNavigate();
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -35,6 +42,7 @@ export function NoteForm({ onSubmit, onAddTag, availableTags }: NoteFormProps) {
               Title
             </label>
             <input
+              defaultValue={title}
               required
               ref={inputRef}
               placeholder="Title..."
@@ -83,6 +91,7 @@ export function NoteForm({ onSubmit, onAddTag, availableTags }: NoteFormProps) {
             Body
           </label>
           <textarea
+            defaultValue={markdown}
             required
             ref={markdownRef}
             className="mt-2 rounded-[4px] border border-[#ccc] p-3 px-2 placeholder:text-[#8b8b8b]"
@@ -90,17 +99,17 @@ export function NoteForm({ onSubmit, onAddTag, availableTags }: NoteFormProps) {
             rows={15}
           />
         </div>
-        <div className="mt-5 flex gap-10 mobile:gap-5 self-end xs:w-full">
+        <div className="mt-5 flex gap-10 self-end mobile:gap-5 xs:w-full">
           <button
             type="submit"
-            className="mobile:text-lg mobile:px-4 xs:w-1/2 rounded-md bg-[#2684FF] px-6 py-2 text-2xl text-white transition-colors hover:bg-[#2684FF]/80"
+            className="rounded-md bg-[#2684FF] px-6 py-2 text-2xl text-white transition-colors hover:bg-[#2684FF]/80 mobile:px-4 mobile:text-lg xs:w-1/2"
           >
             Save
           </button>
           <Link className="xs:w-1/2" to="..">
             <button
               type="button"
-              className="mobile:text-lg mobile:px-4 xs:w-full rounded-md border border-[#ccc] px-6 py-2 text-2xl text-[#8b8b8b] transition-colors hover:bg-[#8b8b8b]/50 hover:text-white"
+              className="rounded-md border border-[#ccc] px-6 py-2 text-2xl text-[#8b8b8b] transition-colors hover:bg-[#8b8b8b]/50 hover:text-white mobile:px-4 mobile:text-lg xs:w-full"
             >
               Cancel
             </button>
