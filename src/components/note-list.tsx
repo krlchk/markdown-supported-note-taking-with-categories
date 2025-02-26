@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Creatable from "react-select";
 import { Tag } from "../App";
 import { useMemo, useState } from "react";
+import clsx from "clsx";
 
 type SimplifiedNote = {
   tags: Tag[];
@@ -12,11 +13,27 @@ type SimplifiedNote = {
 type NoteListProps = {
   availableTags: Tag[];
   notes: SimplifiedNote[];
+  onDeleteTag: (id: string) => void;
+  onUpdateTag: (id: string, label: string) => void;
 };
 
-export function NoteList({ availableTags, notes }: NoteListProps) {
+type EditTagsModalProps = {
+  availableTags: Tag[];
+  show: boolean;
+  handleClose: () => void;
+  onDeleteTag: (id: string) => void;
+  onUpdateTag: (id: string, label: string) => void;
+};
+
+export function NoteList({
+  availableTags,
+  notes,
+  onUpdateTag,
+  onDeleteTag,
+}: NoteListProps) {
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [title, setTitle] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const filteredNotes = useMemo(() => {
     return notes.filter((note) => {
@@ -33,15 +50,18 @@ export function NoteList({ availableTags, notes }: NoteListProps) {
 
   return (
     <>
-      <div className="xs:flex-col flex w-full justify-between font-kanit">
-        <h1 className="xs:mb-5 text-4xl font-semibold">List</h1>
-        <div className="xs:justify-between mobile:gap-5 flex gap-10">
+      <div className="flex w-full justify-between font-kanit xs:flex-col">
+        <h1 className="text-4xl font-semibold xs:mb-5">Notes</h1>
+        <div className="flex gap-10 mobile:gap-5 xs:justify-between">
           <Link className="xs:w-1/2" to="/new">
-            <button className="mobile:text-lg xs:w-full mobile:px-4 rounded-md bg-[#2684FF] px-6 py-2 text-2xl text-white transition-colors hover:bg-[#2684FF]/80">
+            <button className="rounded-md bg-[#2684FF] px-6 py-2 text-2xl text-white transition-colors hover:bg-[#2684FF]/80 mobile:px-4 mobile:text-lg xs:w-full">
               Create
             </button>
           </Link>
-          <button className="xs:w-1/2 mobile:text-lg mobile:px-4 rounded-md border border-[#ccc] px-6 py-2 text-2xl text-[#8b8b8b] transition-colors hover:bg-[#8b8b8b]/50 hover:text-white">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="rounded-md border border-[#ccc] px-6 py-2 text-2xl text-[#8b8b8b] transition-colors hover:bg-[#8b8b8b]/50 hover:text-white mobile:px-4 mobile:text-lg xs:w-1/2"
+          >
             Edit Tags
           </button>
         </div>
@@ -92,13 +112,20 @@ export function NoteList({ availableTags, notes }: NoteListProps) {
           </div>
         </div>
       </form>
-      <div className="mobile:grid-cols-2 tablet:grid-cols-3 xs:grid-cols-1 grid grid-cols-4">
+      <div className="grid grid-cols-4 tablet:grid-cols-3 mobile:grid-cols-2 xs:grid-cols-1">
         {filteredNotes.map((note) => (
           <div className="mt-5 gap-3" key={note.id}>
             <NoteCard id={note.id} title={note.title} tags={note.tags} />
           </div>
         ))}
       </div>
+      <EditTagsModal
+        onDeleteTag={onDeleteTag}
+        onUpdateTag={onUpdateTag}
+        show={isModalOpen}
+        handleClose={() => setIsModalOpen(false)}
+        availableTags={availableTags}
+      />
     </>
   );
 }
@@ -106,7 +133,7 @@ export function NoteList({ availableTags, notes }: NoteListProps) {
 export function NoteCard({ id, title, tags }: SimplifiedNote) {
   return (
     <Link to={`/${id}`}>
-      <div className="xs:mb-2 mr-5 flex flex-col items-center justify-center rounded-md p-5 transition-transform hover:scale-105 hover:border hover:border-[#ccc]/60 hover:shadow-xl">
+      <div className="mr-5 flex flex-col items-center justify-center rounded-md p-5 transition-transform hover:scale-105 hover:border hover:border-[#ccc]/60 hover:shadow-xl xs:mb-2">
         <h1 className="text-xl font-semibold">{title}</h1>
         {tags.length > 0 && (
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2 py-1">
@@ -122,5 +149,62 @@ export function NoteCard({ id, title, tags }: SimplifiedNote) {
         )}
       </div>
     </Link>
+  );
+}
+
+export function EditTagsModal({
+  availableTags,
+  show,
+  handleClose,
+  onDeleteTag,
+  onUpdateTag,
+}: EditTagsModalProps) {
+  return (
+    <div
+      onClick={handleClose}
+      className={clsx(
+        show
+          ? "absolute inset-0 flex items-center justify-center bg-black/40 px-5 backdrop-blur-sm"
+          : "hidden",
+      )}
+    >
+      <div
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+          e.stopPropagation();
+        }}
+        className="flex h-auto min-h-[50vh] w-[70vh] flex-col rounded-lg bg-white p-10"
+      >
+        <div className="flex justify-between">
+          <h1 className="flex items-center text-2xl">Edit tags</h1>
+          <button
+            onClick={handleClose}
+            className="text-3xl text-[#8b8b8b] transition-colors hover:text-[#8b8b8b]/70"
+          >
+            X
+          </button>
+        </div>
+        <div className="mt-8 flex flex-col gap-3">
+          {availableTags.map((tag) => (
+            <div
+              className="flex items-center justify-between rounded-lg border border-[#ccc] p-2"
+              key={tag.id}
+            >
+              <input
+                onChange={(e) => onUpdateTag(tag.id, e.target.value)}
+                className="h-full w-full focus:outline-none"
+                type="text"
+                value={tag.label}
+              />
+              <button
+                onClick={() => onDeleteTag(tag.id)}
+                className="aspect-ratio h-10 w-10 rounded-md border-2 border-red-500 font-semibold text-red-500 transition-colors hover:bg-red-500 hover:text-white"
+              >
+                X
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

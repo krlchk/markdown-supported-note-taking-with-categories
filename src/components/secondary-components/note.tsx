@@ -1,9 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useNote } from "../note-layout";
 import ReactMarkdown from "react-markdown";
 
-export function Note() {
+type NoteProps = {
+  onDelete: (id: string) => void;
+};
+
+export function Note({ onDelete }: NoteProps) {
   const note = useNote();
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between">
@@ -29,7 +34,13 @@ export function Note() {
             </button>
           </Link>
           <Link to="/">
-            <button className="rounded-md border border-red-500 bg-white px-6 py-2 text-2xl text-red-500 transition-colors hover:bg-red-500 hover:text-white mobile:px-4 mobile:text-lg xs:w-1/2">
+            <button
+              onClick={() => {
+                onDelete(note.id);
+                navigate("/");
+              }}
+              className="rounded-md border border-red-500 bg-white px-6 py-2 text-2xl text-red-500 transition-colors hover:bg-red-500 hover:text-white mobile:px-4 mobile:text-lg xs:w-1/2"
+            >
               Delete
             </button>
           </Link>
@@ -41,7 +52,7 @@ export function Note() {
           </Link>
         </div>
       </div>
-      <div className="text-xl mt-5">
+      <div className="mt-5 text-xl">
         <ReactMarkdown>{note.markdown}</ReactMarkdown>
       </div>
     </div>
